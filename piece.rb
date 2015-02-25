@@ -1,19 +1,21 @@
+
+
 class Piece
   DIAGONALS =  [[-1,-1], [1,-1], [-1,1], [1,1]]
   LATERALS = [[0,1], [1,0], [-1,0], [0,-1]]
 
-  attr_reader :symbol
+  attr_reader :symbol, :pos
 
   def initialize(color, pos, board)
     @color = color
     @pos = pos
     @board = board
     @moved = false
-    @valid_moves = []
   end
 
-  def valid_moves
-    moves = self.moves
+  def get_valid_moves
+    #Return an array of positions
+    @valid_moves = operation
 
   end
 
@@ -170,7 +172,7 @@ end
 # p q.moves
 #puts "\u{2654}"
 
-k = King.new("white", [3,2], "b")
-puts k.symbol
-l = Pawn.new("black", [2,1], "f")
-puts l.symbol
+# k = King.new("white", [3,2], "b")
+# puts k.symbol
+# l = Pawn.new("black", [2,1], "f")
+# puts l.symbol
