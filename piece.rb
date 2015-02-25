@@ -4,7 +4,8 @@ class Piece
   DIAGONALS =  [[-1,-1], [1,-1], [-1,1], [1,1]]
   LATERALS = [[0,1], [1,0], [-1,0], [0,-1]]
 
-  attr_reader :symbol, :pos
+  attr_accessor :pos
+  attr_reader :symbol, :color
 
   def initialize(color, pos, board)
     @color = color
@@ -15,12 +16,31 @@ class Piece
 
   def get_valid_moves
     #Return an array of positions
-    @valid_moves = operation
 
+    @valid_moves = moves.reject {|move| move_into_check?(move) }
+
+  end
+
+  def move_into_check?(end_pos)
+    board_dup = @board.dup
+    board_dup.move!(@pos, end_pos)
+    board_dup.in_check?(@color)
   end
 
   def on_board?(pos)
     pos.all? { |x| x.between?(0, 7) }
+  end
+
+  def piece_there?(pos)
+    !@board[pos].nil?
+  end
+
+  def ally?(pos)
+    if @board[pos].color == @color
+      true
+    else
+      false
+    end
   end
 end
 
@@ -28,13 +48,21 @@ class SlidingPiece < Piece
 
   def moves
     moves = []
-
     move_dirs.each do |dir|
       curr_pos = @pos
       while on_board?(curr_pos)
         x,y = curr_pos
         new_pos = [dir[0] + x, dir[1] + y]
-        moves << new_pos if on_board?(new_pos)
+        if on_board?(new_pos)
+           if !piece_there?(new_pos)
+             moves << new_pos
+           elsif ally?(new_pos)
+             break
+           else
+             moves << new_pos
+             break
+           end
+         end
         curr_pos = new_pos
       end
     end
@@ -50,12 +78,19 @@ class SteppingPiece < Piece
       curr_pos = @pos
       x,y = curr_pos
       new_pos = [dir[0] + x, dir[1] + y]
-      moves << new_pos if on_board?(new_pos)
+      if on_board?(new_pos)
+         if !piece_there?(new_pos)
+           moves << new_pos
+           next
+         elsif ally?(new_pos)
+           next
+         else
+           moves << new_pos
+         end
+       end
     end
-
     moves
   end
-
 end
 
 class Knight < SteppingPiece
@@ -130,6 +165,7 @@ class Pawn < Piece
     if @moved
       subsequent_moves
     else
+      @moved = true
       first_move
     end
   end
@@ -142,17 +178,31 @@ class Pawn < Piece
     end
   end
 
-  def subsequent_moves (arr = [])
-    moves = []
-    steps = arr
+  def diagonal_opponents
     if @color == "white"
-      steps += [[-1, -1], [-1, 0], [-1, 1]]
+      steps = [[-1, -1], [-1, 1]]
     else
-      steps += [[1, -1], [1, 0], [1, 1]]
+      steps = [[1, -1], [1, 1]]
+    end
+    steps.select do |step|
+      x, y = @pos
+      new_pos = [x + step[0], y + step[1]]
+      piece_there?(new_pos) && !ally?(new_pos)
+    end
+  end
+
+  def subsequent_moves (arr = [])
+
+    moves = []
+    steps = arr + diagonal_opponents
+    if @color == "white"
+      steps += [[-1, 0]]
+    else
+      steps += [[1, 0]]
     end
     steps.each do |step|
-      x,y = curr_pos
-      new_pos = [dir[0] + x, dir[1] + y]
+      x,y = @pos
+      new_pos = [step[0] + x, step[1] + y]
       moves << new_pos if on_board?(new_pos)
     end
 

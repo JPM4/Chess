@@ -1,6 +1,6 @@
 require_relative './chess_game.rb'
 require_relative './piece.rb'
-
+require 'byebug'
 class Board
   ROOKS = [[0, 0], [0, 7], [7, 0], [7, 7]]
   KNIGHTS = [[0, 1], [0, 6], [7, 1], [7, 6]]
@@ -8,47 +8,85 @@ class Board
   QUEENS = [[0, 3], [7, 3]]
   KINGS = [[0, 4], [7, 4]]
 
-  attr_reader :board
+  attr_reader :board, :white_pieces
 
-  def initialize
-    generate_board
-    show_board
-    group_colors
+  def initialize(new_board)
+    @black_pieces = []
+    @white_pieces = []
+    generate_board(new_board)
+    render unless !new_board
   end
 
   def in_check?(color)
     pieces = color == "white" ? @black_pieces : @white_pieces
-    king_pos = get_king(color).pos
-    pieces.each do |piece|
-      return true if piece.get_valid_moves.include?(king_pos)
-    end
 
+    king_pos = get_king(color).pos
+    pieces.compact.each do |piece|
+      return true if piece.moves.include?(king_pos)
+    end
     false
   end
 
-  def group_colors
-    @black_pieces = @board[0] + @board[1]
-    @white_pieces = @board[6] + @board[7]
+  def dup
+    board_dup = Board.new(false)
+    @board.flatten.compact.each do |piece|
+      new_piece = piece.class.new(piece.color, piece.pos, board_dup)
+      board_dup[piece.pos] = new_piece
+    end
+    board_dup.group_colors
+    board_dup
   end
 
-  def generate_board
+  def move(start, end_pos)
+    raise "There is no piece at the starting position." if self[start].nil?
+    curr_piece = self[start]
+    unless curr_piece.get_valid_moves.include?(end_pos)
+      raise "The piece cannot move to end position."
+    end
+    curr_piece.pos = end_pos
+    self[end_pos] = curr_piece
+    self[start] = nil
+  end
+
+  def move!(start, end_pos)
+    curr_piece = self[start]
+    curr_piece.pos = end_pos
+    self[end_pos] = curr_piece
+    self[start] = nil
+  end
+
+  def [](pos)
+    x,y = pos
+    @board[x][y]
+  end
+
+  def []= (pos, value)
+    x,y = pos
+    @board[x][y] = value
+  end
+
+  def group_colors
+    @board.flatten.compact.each do |piece|
+      @black_pieces << piece if piece.color == "black"
+      @white_pieces << piece if piece.color == "white"
+    end
+  end
+
+  def generate_board(new_board)
     @board = Array.new(8) { Array.new(8) { nil } }
+    return unless new_board
     set_pawns
     set_two_pieces(Rook)
     set_two_pieces(Knight)
     set_two_pieces(Bishop)
     set_two_pieces(Queen)
     set_two_pieces(King)
+    group_colors
   end
 
   def get_king(color)
-    pieces = color == "white" ? @white_pieces : @black_pieces
-    king = nil
-    pieces.each do |piece|
-      king = piece if piece.is_a?(King)
-    end
-
-    king
+    pieces = (color == "white" ? @white_pieces : @black_pieces)
+    pieces.find { |piece| piece.is_a?(King) }
   end
 
   # def find_piece(color, type)
@@ -73,19 +111,18 @@ class Board
     num = curr_pos == KINGS || curr_pos == QUEENS ? 1 : 2
 
     curr_pos.each_with_index do |pos, i|
-      x,y = pos
       color = i < num ? "black" : "white"
-      board[x][y] = piece.new(color, [x, y], @board)
+      self[pos] = piece.new(color, pos , self)
     end
   end
 
   def set_pawns
-    board[1].each_with_index do |tile, i|
-      board[1][i] = Pawn.new("black", [1,i], @board)
+    @board[1].each_with_index do |tile, i|
+      @board[1][i] = Pawn.new("black", [1,i], self)
     end
 
-    board[6].each_with_index do |tile, i|
-      board[6][i] = Pawn.new("white", [6,i], @board)
+    @board[6].each_with_index do |tile, i|
+      @board[6][i] = Pawn.new("white", [6,i], self)
     end
   end
 
@@ -111,6 +148,37 @@ class Board
     end
    new_str
   end
-
-
 end
+
+a = Board.new(true)
+a.render
+# debugger
+a.move([1, 2], [3, 2])
+a.render
+a.move([0,3], [3,0 ])
+a.render
+#a.move([3,0],[7,0])
+a.render
+a.move([3,0],[6,0])
+a.render
+a.move([6,0],[5,0])
+a.render
+a.move([6,1],[5,0])
+a.render
+a.move([7,0], [6,0])
+a.render
+a.move([1,5], [3,5])
+a.render
+a.move([5,0], [4,0])
+a.render
+a.move([7,2], [5,0])
+a.render
+a.move([0,4], [1,5])
+a.render
+a.move([5,0], [3,2])
+a.render
+a.move([3,2], [1,4])
+a.render
+
+a.move([0,1], [2,2])
+a.render
