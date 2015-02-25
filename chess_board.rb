@@ -114,6 +114,3 @@ class Board
 
 
 end
-
-board = Board.new
-board.in_check?("white")
