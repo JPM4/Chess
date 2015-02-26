@@ -1,5 +1,3 @@
-
-
 class Piece
   DIAGONALS =  [[-1,-1], [1,-1], [-1,1], [1,1]]
   LATERALS = [[0,1], [1,0], [-1,0], [0,-1]]
@@ -11,14 +9,10 @@ class Piece
     @color = color
     @pos = pos
     @board = board
-    @moved = false
   end
 
   def get_valid_moves
-    #Return an array of positions
-
     @valid_moves = moves.reject {|move| move_into_check?(move) }
-
   end
 
   def move_into_check?(end_pos)
@@ -161,11 +155,14 @@ class Pawn < Piece
     @symbol = (color == "white" ? "\u{2659}" : "\u{265F}")
   end
 
+  def moved?
+    color == "white" ? pos[0] != 6 : pos[0] != 1
+  end
+
   def moves
-    if @moved
+    if moved?
       subsequent_moves
     else
-      @moved = true
       first_move
     end
   end
@@ -184,29 +181,29 @@ class Pawn < Piece
     else
       steps = [[1, -1], [1, 1]]
     end
+    @possible_moves = []
     steps.select do |step|
       x, y = @pos
       new_pos = [x + step[0], y + step[1]]
-      piece_there?(new_pos) && !ally?(new_pos)
+      @possible_moves << new_pos if piece_there?(new_pos) && !ally?(new_pos)
     end
   end
 
-  def subsequent_moves (arr = [])
-
-    moves = []
-    steps = arr + diagonal_opponents
+  def subsequent_moves(arr = [])
+    diagonal_opponents
+    x,y = @pos
+    steps = arr
     if @color == "white"
       steps += [[-1, 0]]
     else
       steps += [[1, 0]]
     end
     steps.each do |step|
-      x,y = @pos
       new_pos = [step[0] + x, step[1] + y]
-      moves << new_pos if on_board?(new_pos)
+      @possible_moves << new_pos if on_board?(new_pos) && !piece_there?(new_pos)
     end
 
-    moves
+    @possible_moves
   end
 
 end

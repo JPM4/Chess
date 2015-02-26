@@ -1,4 +1,3 @@
-require_relative './chess_game.rb'
 require_relative './piece.rb'
 require 'byebug'
 class Board
@@ -8,18 +7,16 @@ class Board
   QUEENS = [[0, 3], [7, 3]]
   KINGS = [[0, 4], [7, 4]]
 
-  attr_reader :board, :white_pieces
+  attr_reader :board, :white_pieces, :black_pieces
 
   def initialize(new_board)
     @black_pieces = []
     @white_pieces = []
     generate_board(new_board)
-    render unless !new_board
   end
 
   def in_check?(color)
     pieces = color == "white" ? @black_pieces : @white_pieces
-
     king_pos = get_king(color).pos
     pieces.compact.each do |piece|
       return true if piece.moves.include?(king_pos)
@@ -126,6 +123,17 @@ class Board
     end
   end
 
+  def checkmate?(color)
+    pieces = (color == "black" ? @black_pieces : @white_pieces)
+    if in_check?(color)
+      return pieces.none? do |piece|
+        piece.get_valid_moves.length > 0
+      end
+    end
+
+    false
+  end
+
   def render
     puts show_board
   end
@@ -149,36 +157,12 @@ class Board
    new_str
   end
 end
-
-a = Board.new(true)
-a.render
-# debugger
-a.move([1, 2], [3, 2])
-a.render
-a.move([0,3], [3,0 ])
-a.render
-#a.move([3,0],[7,0])
-a.render
-a.move([3,0],[6,0])
-a.render
-a.move([6,0],[5,0])
-a.render
-a.move([6,1],[5,0])
-a.render
-a.move([7,0], [6,0])
-a.render
-a.move([1,5], [3,5])
-a.render
-a.move([5,0], [4,0])
-a.render
-a.move([7,2], [5,0])
-a.render
-a.move([0,4], [1,5])
-a.render
-a.move([5,0], [3,2])
-a.render
-a.move([3,2], [1,4])
-a.render
-
-a.move([0,1], [2,2])
-a.render
+#
+# a = Board.new(true)
+# a.move([6,5], [5,5])
+# a.move([1,4], [3,4])
+# a.move([6,6], [4,6])
+# puts a.checkmate?("white")
+# a.move([0,3],[4,7])
+# a.render
+# puts a.checkmate?("white")
