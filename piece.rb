@@ -207,19 +207,3 @@ class Pawn < Piece
   end
 
 end
-
-
-
-
-# r = King.new("black", [3,2], "board")
-# p r.moves
-# b = Knight.new("white", [0,0], "board")
-# p b.moves
-# q = Queen.new("white", [7,6], "board")
-# p q.moves
-#puts "\u{2654}"
-
-# k = King.new("white", [3,2], "b")
-# puts k.symbol
-# l = Pawn.new("black", [2,1], "f")
-# puts l.symbol

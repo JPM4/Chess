@@ -1,5 +1,6 @@
 require_relative './piece.rb'
 require 'byebug'
+
 class Board
   ROOKS = [[0, 0], [0, 7], [7, 0], [7, 7]]
   KNIGHTS = [[0, 1], [0, 6], [7, 1], [7, 6]]
@@ -86,12 +87,6 @@ class Board
     pieces.find { |piece| piece.is_a?(King) }
   end
 
-  # def find_piece(color, type)
-  #   pieces = color == "white" ? @white_pieces : @black_pieces
-  #
-  #
-  # end
-
   def set_two_pieces(piece)
     if piece == Rook
       curr_pos = ROOKS
@@ -157,12 +152,3 @@ class Board
    new_str
   end
 end
-#
-# a = Board.new(true)
-# a.move([6,5], [5,5])
-# a.move([1,4], [3,4])
-# a.move([6,6], [4,6])
-# puts a.checkmate?("white")
-# a.move([0,3],[4,7])
-# a.render
-# puts a.checkmate?("white")
